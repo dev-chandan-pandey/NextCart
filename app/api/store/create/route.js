@@ -59,11 +59,17 @@ export async function POST(request){
         }
 
         // image upload to imagekit
-        const response = await imagekit.files.upload({
-            file: await toFile(Buffer.from(await image.arrayBuffer()), image.name),
-            fileName: image.name,
-            folder: "logos"
-        })
+        let response
+        try {
+            response = await imagekit.files.upload({
+                file: await toFile(Buffer.from(await image.arrayBuffer()), image.name),
+                fileName: image.name,
+                folder: "logos"
+            })
+        } catch (uploadError) {
+            console.error('ImageKit upload failed', uploadError)
+            return NextResponse.json({ error: 'Image upload failed', details: uploadError.message || String(uploadError) }, { status: 500 })
+        }
 
         const optimizedImage = imagekit.helper.buildSrc({
             urlEndpoint: process.env.IMAGEKIT_URL_ENDPOINT,
@@ -75,24 +81,34 @@ export async function POST(request){
             ]
         })
 
-        const newStore = await prisma.store.create({
-            data: {
-                userId,
-                name,
-                description,
-                username: username.toLowerCase(),
-                email,
-                contact,
-                address,
-                logo: optimizedImage
-            }
-        })
+        let newStore
+        try {
+            newStore = await prisma.store.create({
+                data: {
+                    userId,
+                    name,
+                    description,
+                    username: username.toLowerCase(),
+                    email,
+                    contact,
+                    address,
+                    logo: optimizedImage
+                }
+            })
+        } catch (storeError) {
+            console.error('Store creation failed', storeError)
+            return NextResponse.json({ error: 'Store creation failed', details: storeError.message || String(storeError) }, { status: 500 })
+        }
 
-        //  link store to user
-        await prisma.user.update({
-            where: { id: userId },
-            data: {store: {connect: {id: newStore.id}}}
-        })
+        try {
+            await prisma.user.update({
+                where: { id: userId },
+                data: {store: {connect: {id: newStore.id}}}
+            })
+        } catch (linkError) {
+            console.error('Linking user to store failed', linkError)
+            return NextResponse.json({ error: 'Linking user to store failed', details: linkError.message || String(linkError) }, { status: 500 })
+        }
 
         return NextResponse.json({message: "applied, waiting for approval"})
 
