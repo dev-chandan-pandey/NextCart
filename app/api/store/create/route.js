@@ -48,10 +48,11 @@ export async function POST(request){
             folder: "logos"
         })
 
-        const optimizedImage = imagekit.url({
-            path: response.filePath,
+        const optimizedImage = imagekit.helper.buildSrc({
+            urlEndpoint: process.env.IMAGEKIT_URL_ENDPOINT,
+            src: response.filePath,
             transformation: [
-                {quality: 'auto'},
+                { quality: 'auto' },
                 { format: 'webp' },
                 { width: '512' }
             ]

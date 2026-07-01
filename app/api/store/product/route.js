@@ -33,8 +33,9 @@ export async function POST(request){
                 fileName: image.name,
                 folder: "products",
             })
-            const url = imagekit.url({
-                path: response.filePath,
+            const url = imagekit.helper.buildSrc({
+                urlEndpoint: process.env.IMAGEKIT_URL_ENDPOINT,
+                src: response.filePath,
                 transformation: [
                     { quality: 'auto' },
                     { format: 'webp' },
