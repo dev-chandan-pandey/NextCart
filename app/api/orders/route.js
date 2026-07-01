@@ -155,7 +155,7 @@ export async function GET(request){
                 address: true
             },
             orderBy: {createdAt: 'desc'}
-        })
+        }).catch(() => [])
 
         return NextResponse.json({orders})
     } catch (error) {

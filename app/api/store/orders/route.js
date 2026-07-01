@@ -42,7 +42,7 @@ export async function GET(request){
             where: {storeId},
             include: {user: true, address: true, orderItems: {include: {product: true}}},
             orderBy: {createdAt: 'desc' }
-        })
+        }).catch(() => [])
 
         return NextResponse.json({orders})
     } catch (error) {
