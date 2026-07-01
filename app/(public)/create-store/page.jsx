@@ -36,7 +36,10 @@ export default function CreateStore() {
     const fetchSellerStatus = async () => {
         const token = await getToken()
         try {
-            const { data } = await axios.get('/api/store/create', {headers: {Authorization: `Bearer ${token}`}})
+            const { data } = await axios.get('/api/store/create', {
+                headers: { Authorization: `Bearer ${token}` },
+                withCredentials: true,
+            })
             if(['approved', 'rejected', 'pending'].includes(data.status)){
                 setStatus(data.status)
                 setAlreadySubmitted(true)
@@ -81,7 +84,10 @@ export default function CreateStore() {
             formData.append("address", storeInfo.address)
             formData.append("image", storeInfo.image)
 
-            const { data } = await axios.post('/api/store/create', formData, {headers: {Authorization: `Bearer ${token}`}})
+            const { data } = await axios.post('/api/store/create', formData, {
+                headers: { Authorization: `Bearer ${token}` },
+                withCredentials: true,
+            })
             toast.success(data.message)
             await fetchSellerStatus()
         } catch (error) {
