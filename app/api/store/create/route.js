@@ -27,6 +27,18 @@ export async function POST(request){
             return NextResponse.json({error: "missing store info"}, {status: 400})
         }
 
+        // ensure the Clerk user exists in Prisma before creating a Store
+        await prisma.user.upsert({
+            where: { id: userId },
+            create: {
+                id: userId,
+                email: "",
+                name: "",
+                image: "",
+            },
+            update: {},
+        })
+
         // check is user have already registered a store
         const store = await prisma.store.findFirst({
             where: { userId: userId}
