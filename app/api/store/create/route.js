@@ -6,12 +6,17 @@ import { NextResponse } from "next/server";
 // create the store
 export async function POST(request){
     try {
-        const {userId} = getAuth(request)
+        const { userId } = getAuth(request)
+        if(!userId){
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+        }
+
         // Get the data from the form
         const formData = await request.formData()
 
         const name = formData.get("name")
-        const username = formData.get("username").trim()
+        const rawUsername = formData.get("username")
+        const username = typeof rawUsername === 'string' ? rawUsername.trim() : ''
         const description = formData.get("description")
         const email = formData.get("email")
         const contact = formData.get("contact")
