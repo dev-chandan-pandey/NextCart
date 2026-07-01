@@ -29,7 +29,7 @@ export async function POST(request){
         // Uploading Images to ImageKit
         const imagesUrl = await Promise.all(images.map(async (image) => {
             const buffer = Buffer.from(await image.arrayBuffer());
-            const response = await imagekit.upload({
+            const response = await imagekit.files.upload({
                 file: buffer,
                 fileName: image.name,
                 folder: "products",
