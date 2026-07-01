@@ -1,4 +1,4 @@
-import imagekit from "@/configs/imageKit";
+import imagekit, { toFile } from "@/configs/imageKit";
 import prisma from "@/lib/prisma";
 import { getAuth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
@@ -42,9 +42,8 @@ export async function POST(request){
         }
 
         // image upload to imagekit
-        const buffer = Buffer.from(await image.arrayBuffer());
         const response = await imagekit.files.upload({
-            file: buffer,
+            file: await toFile(Buffer.from(await image.arrayBuffer()), image.name),
             fileName: image.name,
             folder: "logos"
         })

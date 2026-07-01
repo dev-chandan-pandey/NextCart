@@ -1,4 +1,4 @@
-import ImageKit from "@imagekit/nodejs";
+import ImageKit, { toFile } from "@imagekit/nodejs";
 
 const imagekit = new ImageKit({
   publicKey: process.env.IMAGEKIT_PUBLIC_KEY,
@@ -7,3 +7,4 @@ const imagekit = new ImageKit({
 });
 
 export default imagekit;
+export { toFile };

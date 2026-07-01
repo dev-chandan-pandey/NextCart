@@ -59,7 +59,8 @@ export default function CreateStore() {
                 setAlreadySubmitted(false)
             }
         } catch (error) {
-            toast.error(error?.response?.data?.error || error.message)
+            const message = error?.response?.data?.error || error.message
+            toast.error(typeof message === 'string' ? message : JSON.stringify(message))
         }
         setLoading(false)
     }
@@ -84,7 +85,8 @@ export default function CreateStore() {
             toast.success(data.message)
             await fetchSellerStatus()
         } catch (error) {
-            toast.error(error?.response?.data?.error || error.message)
+            const message = error?.response?.data?.error || error.message
+            toast.error(typeof message === 'string' ? message : JSON.stringify(message))
         }
 
     }
