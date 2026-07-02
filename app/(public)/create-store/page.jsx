@@ -34,10 +34,11 @@ export default function CreateStore() {
     }
 
     const fetchSellerStatus = async () => {
-        const token = await getToken()
+        const token = await getToken().catch(() => null)
+        const headers = token ? { Authorization: `Bearer ${token}` } : {}
         try {
             const { data } = await axios.get('/api/store/create', {
-                headers: { Authorization: `Bearer ${token}` },
+                headers,
                 withCredentials: true,
             })
             if(['approved', 'rejected', 'pending'].includes(data.status)){
@@ -54,7 +55,6 @@ export default function CreateStore() {
                     case "pending":
                         setMessage("Your store request is pending, please wait for admin to approve your store")
                         break;
-                
                     default:
                         break;
                 }
@@ -74,7 +74,7 @@ export default function CreateStore() {
             return toast('Please login to continue')
         }
         try {
-            const token = await getToken()
+            const token = await getToken().catch(() => null)
             const formData = new FormData()
             formData.append("name", storeInfo.name)
             formData.append("description", storeInfo.description)
@@ -84,8 +84,9 @@ export default function CreateStore() {
             formData.append("address", storeInfo.address)
             formData.append("image", storeInfo.image)
 
+            const headers = token ? { Authorization: `Bearer ${token}` } : {}
             const { data } = await axios.post('/api/store/create', formData, {
-                headers: { Authorization: `Bearer ${token}` },
+                headers,
                 withCredentials: true,
             })
             toast.success(data.message)
