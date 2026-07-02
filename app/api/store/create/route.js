@@ -1,4 +1,4 @@
-import imagekit, { toFile } from "@/configs/imageKit";
+import imagekit from "@/configs/imageKit";
 import prisma from "@/lib/prisma";
 import { getAuth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
@@ -6,17 +6,12 @@ import { NextResponse } from "next/server";
 // create the store
 export async function POST(request){
     try {
-        const { userId } = getAuth(request)
-        if(!userId){
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-        }
-
+        const {userId} = getAuth(request)
         // Get the data from the form
         const formData = await request.formData()
 
         const name = formData.get("name")
-        const rawUsername = formData.get("username")
-        const username = typeof rawUsername === 'string' ? rawUsername.trim() : ''
+        const username = formData.get("username").trim()
         const description = formData.get("description")
         const email = formData.get("email")
         const contact = formData.get("contact")
@@ -26,18 +21,6 @@ export async function POST(request){
         if(!name || !username || !description || !email || !contact || !address || !image){
             return NextResponse.json({error: "missing store info"}, {status: 400})
         }
-
-        // ensure the Clerk user exists in Prisma before creating a Store
-        await prisma.user.upsert({
-            where: { id: userId },
-            create: {
-                id: userId,
-                email: "",
-                name: "",
-                image: "",
-            },
-            update: {},
-        })
 
         // check is user have already registered a store
         const store = await prisma.store.findFirst({
@@ -59,56 +42,40 @@ export async function POST(request){
         }
 
         // image upload to imagekit
-        let response
-        try {
-            response = await imagekit.files.upload({
-                file: await toFile(Buffer.from(await image.arrayBuffer()), image.name),
-                fileName: image.name,
-                folder: "logos"
-            })
-        } catch (uploadError) {
-            console.error('ImageKit upload failed', uploadError)
-            return NextResponse.json({ error: 'Image upload failed', details: uploadError.message || String(uploadError) }, { status: 500 })
-        }
+        const buffer = Buffer.from(await image.arrayBuffer());
+        const response = await imagekit.upload({
+            file: buffer,
+            fileName: image.name,
+            folder: "logos"
+        })
 
-        const optimizedImage = imagekit.helper.buildSrc({
-            urlEndpoint: process.env.IMAGEKIT_URL_ENDPOINT,
-            src: response.filePath,
+        const optimizedImage = imagekit.url({
+            path: response.filePath,
             transformation: [
-                { quality: 'auto' },
+                {quality: 'auto'},
                 { format: 'webp' },
                 { width: '512' }
             ]
         })
 
-        let newStore
-        try {
-            newStore = await prisma.store.create({
-                data: {
-                    userId,
-                    name,
-                    description,
-                    username: username.toLowerCase(),
-                    email,
-                    contact,
-                    address,
-                    logo: optimizedImage
-                }
-            })
-        } catch (storeError) {
-            console.error('Store creation failed', storeError)
-            return NextResponse.json({ error: 'Store creation failed', details: storeError.message || String(storeError) }, { status: 500 })
-        }
+        const newStore = await prisma.store.create({
+            data: {
+                userId,
+                name,
+                description,
+                username: username.toLowerCase(),
+                email,
+                contact,
+                address,
+                logo: optimizedImage
+            }
+        })
 
-        try {
-            await prisma.user.update({
-                where: { id: userId },
-                data: {store: {connect: {id: newStore.id}}}
-            })
-        } catch (linkError) {
-            console.error('Linking user to store failed', linkError)
-            return NextResponse.json({ error: 'Linking user to store failed', details: linkError.message || String(linkError) }, { status: 500 })
-        }
+        //  link store to user
+        await prisma.user.update({
+            where: { id: userId },
+            data: {store: {connect: {id: newStore.id}}}
+        })
 
         return NextResponse.json({message: "applied, waiting for approval"})
 

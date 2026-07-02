@@ -28,14 +28,14 @@ export async function POST(request){
 
         // Uploading Images to ImageKit
         const imagesUrl = await Promise.all(images.map(async (image) => {
-            const response = await imagekit.files.upload({
-                file: image,
+            const buffer = Buffer.from(await image.arrayBuffer());
+            const response = await imagekit.upload({
+                file: buffer,
                 fileName: image.name,
                 folder: "products",
             })
-            const url = imagekit.helper.buildSrc({
-                urlEndpoint: process.env.IMAGEKIT_URL_ENDPOINT,
-                src: response.filePath,
+            const url = imagekit.url({
+                path: response.filePath,
                 transformation: [
                     { quality: 'auto' },
                     { format: 'webp' },

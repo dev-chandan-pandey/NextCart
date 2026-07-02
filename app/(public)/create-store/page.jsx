@@ -34,13 +34,9 @@ export default function CreateStore() {
     }
 
     const fetchSellerStatus = async () => {
-        const token = await getToken().catch(() => null)
-        const headers = token ? { Authorization: `Bearer ${token}` } : {}
+        const token = await getToken()
         try {
-            const { data } = await axios.get('/api/store/create', {
-                headers,
-                withCredentials: true,
-            })
+            const { data } = await axios.get('/api/store/create', {headers: {Authorization: `Bearer ${token}`}})
             if(['approved', 'rejected', 'pending'].includes(data.status)){
                 setStatus(data.status)
                 setAlreadySubmitted(true)
@@ -55,6 +51,7 @@ export default function CreateStore() {
                     case "pending":
                         setMessage("Your store request is pending, please wait for admin to approve your store")
                         break;
+                
                     default:
                         break;
                 }
@@ -62,8 +59,7 @@ export default function CreateStore() {
                 setAlreadySubmitted(false)
             }
         } catch (error) {
-            const message = error?.response?.data?.error || error.message
-            toast.error(typeof message === 'string' ? message : JSON.stringify(message))
+            toast.error(error?.response?.data?.error || error.message)
         }
         setLoading(false)
     }
@@ -74,7 +70,7 @@ export default function CreateStore() {
             return toast('Please login to continue')
         }
         try {
-            const token = await getToken().catch(() => null)
+            const token = await getToken()
             const formData = new FormData()
             formData.append("name", storeInfo.name)
             formData.append("description", storeInfo.description)
@@ -84,16 +80,11 @@ export default function CreateStore() {
             formData.append("address", storeInfo.address)
             formData.append("image", storeInfo.image)
 
-            const headers = token ? { Authorization: `Bearer ${token}` } : {}
-            const { data } = await axios.post('/api/store/create', formData, {
-                headers,
-                withCredentials: true,
-            })
+            const { data } = await axios.post('/api/store/create', formData, {headers: {Authorization: `Bearer ${token}`}})
             toast.success(data.message)
             await fetchSellerStatus()
         } catch (error) {
-            const message = error?.response?.data?.error || error.message
-            toast.error(typeof message === 'string' ? message : JSON.stringify(message))
+            toast.error(error?.response?.data?.error || error.message)
         }
 
     }
