@@ -1,26 +1,26 @@
+'use client'
 import StoreLayout from "@/components/store/StoreLayout";
-import {SignedIn, SignedOut, SignIn} from "@clerk/nextjs"
+import Footer from "@/components/Footer";
+import { Show } from "@clerk/nextjs";
 
-export const metadata = {
-    title: "NextCart. - Store Dashboard",
-    description: "NextCart. - Store Dashboard",
-};
-
-export default function RootAdminLayout({ children }) {
-
-    return (
-        <>  
-        <SignedIn>
-            <StoreLayout>
-                {children}
-            </StoreLayout>
-        </SignedIn>
-        <SignedOut>
-            <div className="min-h-screen flex items-center justify-center">
-                <SignIn fallbackRedirectUrl="/store" routing="hash" />
-            </div>
-        </SignedOut>
-            
-        </>
-    );
+export default function RootStoreLayout({ children }) {
+  return (
+    <>
+      <Show when="signed-in">
+        <StoreLayout>
+          {children}
+        </StoreLayout>
+      </Show>
+      <Show when="signed-out">
+        <main className="max-w-7xl mx-auto px-6 py-8">
+          <div className="min-h-[80vh] flex items-center justify-center text-slate-400">
+            <h1 className="text-2xl sm:text-4xl font-semibold">
+              Please login to access the store dashboard
+            </h1>
+          </div>
+        </main>
+        <Footer />
+      </Show>
+    </>
+  );
 }

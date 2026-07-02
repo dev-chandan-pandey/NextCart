@@ -1,25 +1,24 @@
+'use client'
 import AdminLayout from "@/components/admin/AdminLayout";
-import {SignedIn, SignedOut, SignIn} from "@clerk/nextjs"
-
-export const metadata = {
-    title: "NextCart. - Admin",
-    description: "NextCart. - Admin",
-};
+import { Show } from "@clerk/nextjs";
 
 export default function RootAdminLayout({ children }) {
-
-    return (
-        <>
-            <SignedIn>
-                <AdminLayout>
-                {children}
-                </AdminLayout>
-            </SignedIn>
-            <SignedOut>
-                <div className="min-h-screen flex items-center justify-center">
-                    <SignIn fallbackRedirectUrl="/admin" routing="hash"/>
-                </div>
-            </SignedOut>
-        </>
-    );
+  return (
+    <>
+      <Show when="signed-in">
+        <AdminLayout>
+          {children}
+        </AdminLayout>
+      </Show>
+      <Show when="signed-out">
+        <main className="max-w-7xl mx-auto px-6 py-8">
+          <div className="min-h-[80vh] flex items-center justify-center text-slate-400">
+            <h1 className="text-2xl sm:text-4xl font-semibold">
+              Please login to access the admin dashboard
+            </h1>
+          </div>
+        </main>
+      </Show>
+    </>
+  );
 }
